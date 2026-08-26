@@ -22,7 +22,7 @@ In addition, there is an auto-clicker menu where you can toggle the auto-clicker
 golden cookies, and fortune cookies.
 
 To design this mod, I have had to dig through the game of Cookie Clicker as well as Steam's save and load feature.
-This mod sticks to the game's languages of Javascript, HTML, and CSS.
+This mod sticks to the game's languages of Javascript, HTML, and CSS and builds upon its existing API!
 
 Overall, the purpose of this mod is to automate the player's actions so you have the ability to do other things
 with your time!
