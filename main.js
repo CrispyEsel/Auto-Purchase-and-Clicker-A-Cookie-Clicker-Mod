@@ -30,7 +30,7 @@
     - Emanuel
 */
 
-Game.registerMod('Auto-Purchase and Clicker', {
+Game.registerMod('auto purchase and clicker', {
     init: function() {
         console.log('Auto-Purchase and Clicker loaded!');
 

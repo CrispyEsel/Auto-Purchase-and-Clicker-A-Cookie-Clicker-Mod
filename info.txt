@@ -1,14 +1,11 @@
 {
- "Name": "AFK Timer Mod",
- "Description": "A Cookie Clicker mod with two draggable panels: 
- an auto-purchaser that calculates time-to-afford any building/quantity and can auto-buy it, 
- and an auto-clicker for regular, golden, and fortune cookies. Built by digging through Cookie Clicker's source 
- and Steam's save/load system to safely hook into the game's mod API.!",
+ "Name": "Auto Purchase and Clicker",
+ "Description": "Auto-purchaser that calculates time-to-afford auto-buys and auto-clicker for regular, golden, and fortune cookies.",
  "Author": "Emanuel Munoz Cordero",
- "ID": "Munoz First",
+ "ID": "auto purchase and clicker",
  "ModVersion": 1,
  "GameVersion": 2.053,
- "Date": "8/25/2026",
+ "Date": "08/25/2026",
  "Dependencies": [],
  "Disabled": 1
 }
