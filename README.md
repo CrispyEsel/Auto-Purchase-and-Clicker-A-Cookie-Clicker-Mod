@@ -28,4 +28,4 @@ Overall, the purpose of this mod is to automate the player's actions so you have
 with your time!
 
 Thank you for using this mod, and I hope it helps you progress through Cookie Clicker more efficiently!
-- Emanuel
+Emanuel
