@@ -175,6 +175,12 @@ function buildAutoBuy() {
     toggleButton.style.fontFamily = 'Tahoma, Arial, sans-serif';
     toggleButton.style.border = '1px solid #fda';
 
+    function turnOffAutoBuy() {
+        toggleAutoBuy = false;
+        toggleButton.style.backgroundColor = '#b52f18'; // #b52f18 is Red.
+        toggleButton.textContent = 'Off';
+    }
+
     // This event listener allows for the player to interact with the button.
     toggleButton.addEventListener('click', function() {
         toggleAutoBuy = !toggleAutoBuy;                       // Flips the Auto-Buy Boolean.
@@ -182,10 +188,14 @@ function buildAutoBuy() {
             toggleButton.style.backgroundColor = '#6ea644'; // #6ea644 is Green.
             toggleButton.textContent = 'On';
         } else {
-            toggleButton.style.backgroundColor = '#b52f18'; // #b52f18 is Red.
-            toggleButton.textContent = 'Off';
+            turnOffAutoBuy();
         }
     });
+
+    // When dropdown selection changes, the Auto-Buy button automatically turns off.
+
+    numberSelect.addEventListener('change', turnOffAutoBuy);
+    typeSelect.addEventListener('change', turnOffAutoBuy);
 
     /* The autoBuy function grabs the numerical value that the player selected in typeSelect and numberSelect 
     and uses the game's buy() function to automatically buy the object requested.
@@ -193,7 +203,21 @@ function buildAutoBuy() {
     function autoBuy() {
         if (!toggleAutoBuy) return;
 
-        Game.ObjectsById[typeSelect.value].buy(parseInt(numberSelect.value));
+        var building = Game.ObjectsById[typeSelect.value];
+        var amount = parseInt(numberSelect.value);
+        var totalCost = 0;
+
+        // Runs until it reaches the requested number of buildings that the player wishes to buy.
+        for (var i = 0; i < amount; i++) {
+            totalCost += building.getPrice();
+            building.amount++;
+        }
+
+        building.amount -= amount;
+
+        if (totalCost <= Game.cookies) {
+            building.buy(amount);
+        }
     }
 
     /* The updateCalculation function calculates and displays the amount of time that it will take for the
