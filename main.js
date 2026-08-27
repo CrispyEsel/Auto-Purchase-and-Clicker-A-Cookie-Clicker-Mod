@@ -15,7 +15,13 @@
     The Auto-Purchaser has a customizable menu where you can select the number of buildings (1, 5, 10, 100, 1000) 
     and the type of building to target.From there, you can toggle the auto-purchaser, this mod will calculate how 
     long it will take to purchase the selected number of buildings based on your current cookies, cookies per second, 
-    and dropdown selections. 
+    and dropdown selections.
+    
+    Right next to this, there is an Auto-Buy Optimal button! Which will calculate the best possible building 
+    purchase possible based on its return on investment (ROI) and buy it once there is sufficient cookies, 
+    similar to the Auto-Buy function.
+
+    NOTE: Both Auto-Buy and Auto-Buy Optimal can be used at the same time.
     
     In addition, there is an auto-clicker menu where you can toggle the auto-clicker for cookies, 
     golden cookies, and fortune cookies.
@@ -247,7 +253,9 @@ function buildAutoBuy() {
             building.buy(amount);
         }
     }
-
+    /* The autoOptimal function calculates the best possible building purchase
+    based on its ROI (return on investment) and purchases it when enabled and possible.
+    */
     function autoOptimal() {
         if (!toggleAutoOptimal) return;
 
@@ -258,22 +266,68 @@ function buildAutoBuy() {
 
             var me = Game.ObjectsById[i];
             var priceOfNext = me.getSumPrice(1);
-            var cpsGain = me.storedCps;
-            var ratio = 0;
+            if (priceOfNext <= 0) continue;
 
-            if (priceOfNext > 0 && cpsGain > 0 && priceOfNext <= Game.cookies) {
-                ratio = cpsGain / priceOfNext;
-                if (ratio > bestRatio) {
-                    bestRatio = ratio;
-                    best = i;
-                }
+            var cpsGain = me.storedCps;
+            if (cpsGain <= 0) continue;
+
+            var ratio = cpsGain / priceOfNext;
+
+            if (ratio > bestRatio) {
+                bestRatio = ratio;
+                best = me;
             }
         }
 
         if (best == null) return;
-        Game.ObjectsById[best].buy(1);
+        if (best.getSumPrice(1) <= Game.cookies) {
+            best.buy(1);
+        }
+    }
 
-        console.log('Next Optimal Building is ' + Game.ObjectsById[best].name);
+    function updateOptimalCalculation() {
+        // Calculates time until the NEXT optimal purchase for the next cycle.
+        // We re-scan since prices/ratios shift after every purchase.
+        var nextBest = null;
+        var nextBestRatio = -Infinity;
+
+        for (var j in Game.ObjectsById) {
+            var me = Game.ObjectsById[j];
+            var priceOfNext = me.getSumPrice(1);
+            if (priceOfNext <= 0) continue;
+
+            var cpsGain = me.storedCps;
+            if (cpsGain <= 0) continue;
+
+            var ratioNext = cpsGain / priceOfNext;
+            if (ratioNext > nextBestRatio) {
+                nextBestRatio = ratioNext;
+                nextBest = j;
+            }
+        }
+
+        if (nextBest == null) {
+            resultDiv2.textContent = 'No optimal purchase available.';
+            return;
+        }
+
+        resultDiv2.textContent = 'Optimal: ' + Game.ObjectsById[nextBest].name + ' will take about ';
+        var cookiesNeeded = Math.max(0, Game.ObjectsById[nextBest].getSumPrice(1) - Game.cookies);
+
+        var timeDuration = cookiesNeeded / Game.cookiesPs;
+
+        if (timeDuration >= 604800) {
+            resultDiv2.textContent += (timeDuration / 604800).toFixed(2) + ' weeks.';
+        } else if (timeDuration >= 86400) {
+            resultDiv2.textContent += (timeDuration / 86400).toFixed(2) + ' days.';
+        } else if (timeDuration >= 3600) {
+            resultDiv2.textContent += (timeDuration / 3600).toFixed(2) + ' hours.';
+        } else if (timeDuration >= 60) {
+            resultDiv2.textContent += (timeDuration / 60).toFixed(2) + ' minutes.';
+        } else {
+            resultDiv2.textContent += timeDuration.toFixed(2) + ' seconds.';
+        }
+
     }
 
     /* The updateCalculation function calculates and displays the amount of time that it will take for the
@@ -333,6 +387,13 @@ function buildAutoBuy() {
     resultDiv.style.fontSize = 'clamp(10px, 4px, 12px)';
     updateCalculation();
 
+    // Displays the amount of time needed to make an optimal purchase
+    var resultDiv2 = document.createElement('div');
+    resultDiv2.id = 'resultDiv2';
+    resultDiv2.style.marginTop = '8px';
+    resultDiv2.style.fontFamily = 'Merriweather, Arial, sans-serif';
+    resultDiv2.style.fontSize = 'clamp(10px, 4px, 12px)';
+
     // Assembles the complete panel.
     var multiplierLabel = document.createElement('span');
     multiplierLabel.textContent = 'Multiplier: ';
@@ -363,12 +424,15 @@ function buildAutoBuy() {
     panel.appendChild(optimalButton);
     panel.appendChild(document.createElement('br'));
     panel.appendChild(resultDiv);
+    panel.appendChild(document.createElement('br'));
+    panel.appendChild(resultDiv2);
 
     draggablePanel(panel);
     document.body.appendChild(panel);
 
     // Calls the listed function every 750ms so as the player gains more cookies, numbers change accordingly.
     setInterval(updateCalculation, 750);
+    setInterval(updateOptimalCalculation, 750);
     setInterval(autoBuy, 750);
     setInterval(autoOptimal, 750);
 }
