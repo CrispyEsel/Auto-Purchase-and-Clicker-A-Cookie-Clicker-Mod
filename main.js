@@ -136,8 +136,8 @@ function buildAutoBuy() {
     panel.style.padding = '.5rem';
     panel.style.border = '1px solid #fda';                        // Gold, Chosen to match the game's color.
     panel.style.zIndex = 9999;
-    panel.style.fontFamily = 'Tahoma, Arial, sans-serif';
-    panel.style.fontSize = 'clamp(1.2vw, 2vh, 1.3rem)';
+    panel.style.fontFamily = 'Merriweather, Arial, sans-serif';
+    panel.style.fontSize = 'clamp(1vw, .6vw, .8rem)';
     panel.style.width = 'clamp(23%, 10%, 30%)';
 
     // Creates a dropdown of quantity options to buy.
@@ -150,6 +150,9 @@ function buildAutoBuy() {
         numberSelect.appendChild(opt);
     });
     numberSelect.style.width = 'clamp(35px, 4vw, 60px)';
+    numberSelect.style.fontFamily = 'Merriweather, Arial, sans-serif';
+    numberSelect.style.border = '1px solid #fda';
+    numberSelect.style.fontSize = 'clamp(12px, 4px, 14px)';
 
     // Creates a dropdown of building types.
     var typeSelect = document.createElement('select');
@@ -163,6 +166,9 @@ function buildAutoBuy() {
     }
     typeSelect.style.width = 'clamp(120px, 2vw, 300px)';
     typeSelect.style.height = 'clamp(20px, 2vh, 30px)';
+    typeSelect.style.fontFamily = 'Merriweather, Arial, sans-serif';
+    typeSelect.style.border = '1px solid #fda';
+    typeSelect.style.fontSize = 'clamp(10px, 4px, 12px)';
 
 
     // Creates a button for the Auto-Purchase.
@@ -172,8 +178,19 @@ function buildAutoBuy() {
     toggleButton.textContent = 'Off';
     toggleButton.style.backgroundColor = '#b52f18';
     toggleButton.style.marginTop = '8px';
-    toggleButton.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    toggleButton.style.fontFamily = 'Merriweather, Arial, sans-serif';
     toggleButton.style.border = '1px solid #fda';
+    toggleButton.style.fontSize = 'clamp(1.2vw, .6vw, .8rem)';
+
+    var optimalButton = document.createElement('button');
+    var toggleAutoOptimal = false;
+    optimalButton.id = 'OptimalBuyToggle';
+    optimalButton.textContent = 'Off';
+    optimalButton.style.backgroundColor = '#b52f18';
+    optimalButton.style.marginTop = '8px';
+    optimalButton.style.fontFamily = 'Merriweather, Arial, sans-serif';
+    optimalButton.style.border = '1px solid #fda';
+    optimalButton.style.fontSize = 'clamp(1.2vw, .6vw, .8rem)';
 
     function turnOffAutoBuy() {
         toggleAutoBuy = false;
@@ -189,6 +206,17 @@ function buildAutoBuy() {
             toggleButton.textContent = 'On';
         } else {
             turnOffAutoBuy();
+        }
+    });
+
+    optimalButton.addEventListener('click', function() {
+        toggleAutoOptimal = !toggleAutoOptimal;                // Flips the Auto-Buy Boolean.
+        if (toggleAutoOptimal) {
+            optimalButton.style.backgroundColor = '#6ea644'; // #6ea644 is Green.
+            optimalButton.textContent = 'On';
+        } else {
+            optimalButton.style.backgroundColor = '#b52f18'; // #b52f18 is Red.
+            optimalButton.textContent = 'Off';
         }
     });
 
@@ -218,6 +246,34 @@ function buildAutoBuy() {
         if (totalCost <= Game.cookies) {
             building.buy(amount);
         }
+    }
+
+    function autoOptimal() {
+        if (!toggleAutoOptimal) return;
+
+        var best = null;
+        var bestRatio = -Infinity;
+
+        for (var i in Game.ObjectsById) {
+
+            var me = Game.ObjectsById[i];
+            var priceOfNext = me.getSumPrice(1);
+            var cpsGain = me.storedCps;
+            var ratio = 0;
+
+            if (priceOfNext > 0 && cpsGain > 0 && priceOfNext <= Game.cookies) {
+                ratio = cpsGain / priceOfNext;
+                if (ratio > bestRatio) {
+                    bestRatio = ratio;
+                    best = i;
+                }
+            }
+        }
+
+        if (best == null) return;
+        Game.ObjectsById[best].buy(1);
+
+        console.log('Next Optimal Building is ' + Game.ObjectsById[best].name);
     }
 
     /* The updateCalculation function calculates and displays the amount of time that it will take for the
@@ -254,18 +310,18 @@ function buildAutoBuy() {
         // NOTE: toFixed(n) fixes the result to n decimal places.
         if (timeDurationHours > 24) {
             if (timeDurationDays > 7) {
-                resultDiv.textContent = 'This will take about ' + timeDurationWeeks.toFixed(2) + ' weeks.';
+                resultDiv.textContent = 'Auto-Buy will take about ' + timeDurationWeeks.toFixed(2) + ' weeks.';
             } else {
-                resultDiv.textContent = 'This will take about ' + timeDurationDays.toFixed(2) + ' days.';
+                resultDiv.textContent = 'Auto-Buy will take about ' + timeDurationDays.toFixed(2) + ' days.';
             }
         } else if (timeDuration > 60) {
             if (timeDurationMins > 60) {
-                resultDiv.textContent = 'This will take about ' + timeDurationHours.toFixed(2) + ' hours.';
+                resultDiv.textContent = 'Auto-Buy will take about ' + timeDurationHours.toFixed(2) + ' hours.';
             } else {
-                resultDiv.textContent = 'This will take about ' + timeDurationMins.toFixed(2) + ' minutes.';
+                resultDiv.textContent = 'Auto-Buy will take about ' + timeDurationMins.toFixed(2) + ' minutes.';
             }
         } else {
-            resultDiv.textContent = 'This will take about ' + timeDuration.toFixed(2) + ' seconds.';
+            resultDiv.textContent = 'Auto-Buy will take about ' + timeDuration.toFixed(2) + ' seconds.';
         }
     }
 
@@ -273,21 +329,26 @@ function buildAutoBuy() {
     var resultDiv = document.createElement('div');
     resultDiv.id = 'resultDiv';
     resultDiv.style.marginTop = '8px';
-    resultDiv.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    resultDiv.style.fontFamily = 'Merriweather, Arial, sans-serif';
+    resultDiv.style.fontSize = 'clamp(10px, 4px, 12px)';
     updateCalculation();
 
     // Assembles the complete panel.
     var multiplierLabel = document.createElement('span');
     multiplierLabel.textContent = 'Multiplier: ';
-    multiplierLabel.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    multiplierLabel.style.fontFamily = 'Merriweather, Arial, sans-serif';
 
     var typeLabel = document.createElement('span');
     typeLabel.textContent = 'Upgrade Type: ';
-    typeLabel.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    typeLabel.style.fontFamily = 'Merriweather, Arial, sans-serif';
 
     var autoBuyLabel = document.createElement('span');
-    autoBuyLabel.textContent = 'Auto-buy: ';
-    autoBuyLabel.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    autoBuyLabel.textContent = 'Auto-Buy: ';
+    autoBuyLabel.style.fontFamily = 'Merriweather, Arial, sans-serif';
+
+    var autoOptimalLabel = document.createElement('span');
+    autoOptimalLabel.textContent = ' Auto-Buy Optimal: ';
+    autoOptimalLabel.style.fontFamily = 'Merriweather, Arial, sans-serif';
 
     panel.appendChild(multiplierLabel);
     panel.appendChild(numberSelect);
@@ -297,6 +358,9 @@ function buildAutoBuy() {
     panel.appendChild(document.createElement('br'));
     panel.appendChild(autoBuyLabel);
     panel.appendChild(toggleButton);
+    panel.appendChild(document.createTextNode('\u00A0'));
+    panel.appendChild(autoOptimalLabel);
+    panel.appendChild(optimalButton);
     panel.appendChild(document.createElement('br'));
     panel.appendChild(resultDiv);
 
@@ -306,6 +370,7 @@ function buildAutoBuy() {
     // Calls the listed function every 750ms so as the player gains more cookies, numbers change accordingly.
     setInterval(updateCalculation, 750);
     setInterval(autoBuy, 750);
+    setInterval(autoOptimal, 750);
 }
 
 
@@ -384,8 +449,8 @@ function buildAutoClicker() {
     clickPanel.style.padding = '.5rem';
     clickPanel.style.border = '1px solid #fda';
     clickPanel.style.zIndex = 9999;
-    clickPanel.style.fontFamily = 'Tahoma, Arial, sans-serif';
-    clickPanel.style.fontSize = 'clamp(1.2vw, 2vh, 1.3rem)';
+    clickPanel.style.fontFamily = 'Merriweather, Arial, sans-serif';
+    clickPanel.style.fontSize = 'clamp(1.1vw, .6vw, .8rem)';
     clickPanel.style.width = 'clamp(15%, 5%, 20%)';
     clickPanel.style.height = 'clamp(75px, 10%, 100px)';
     clickPanel.style.textAlign = 'Center';
@@ -398,8 +463,9 @@ function buildAutoClicker() {
     autoClickButton.textContent = 'Off';
     autoClickButton.style.backgroundColor = '#b52f18';
     autoClickButton.style.marginTop = '8px';
-    autoClickButton.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    autoClickButton.style.fontFamily = 'Merriweather, Arial, sans-serif';
     autoClickButton.style.border = '1px solid #fda';
+    autoClickButton.style.fontSize = 'clamp(1.2vw, .6vw, .8rem)';
 
     // This event listener allows for the player to interact with the Auto-Clicker button.
     autoClickButton.addEventListener('click', function() {
@@ -419,8 +485,9 @@ function buildAutoClicker() {
     autoGoldenButton.textContent = 'Off';
     autoGoldenButton.style.backgroundColor = '#b52f18';
     autoGoldenButton.style.marginTop = '8px';
-    autoGoldenButton.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    autoGoldenButton.style.fontFamily = 'Merriweather, Arial, sans-serif';
     autoGoldenButton.style.border = '1px solid #fda';
+    autoGoldenButton.style.fontSize = 'clamp(1.2vw, .6vw, .8rem)';
 
     // This event listener allows for the player to interact with the Golden Cookie Auto-Clicker button.
     autoGoldenButton.addEventListener('click', function() {
@@ -440,8 +507,9 @@ function buildAutoClicker() {
     autoFortuneButton.textContent = 'Off';
     autoFortuneButton.style.backgroundColor = '#b52f18';
     autoFortuneButton.style.marginTop = '8px';
-    autoFortuneButton.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    autoFortuneButton.style.fontFamily = 'Merriweather, Arial, sans-serif';
     autoFortuneButton.style.border = '1px solid #fda';
+    autoFortuneButton.style.fontSize = 'clamp(1.2vw, .6vw, .8rem)';
     
     // This event listener allows for the player to interact with the Fortune Cookie Auto-Clicker button.
     autoFortuneButton.addEventListener('click', function() {
@@ -457,16 +525,16 @@ function buildAutoClicker() {
 
     // Assembles the Auto-Clicker Panel
     var clickLabel = document.createElement('span');
-    clickLabel.textContent = 'Auto-Clicker: ';
-    clickLabel.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    clickLabel.textContent = 'Auto-Clicker:  ';
+    clickLabel.style.fontFamily = 'Merriweather, Arial, sans-serif';
 
     var goldenLabel = document.createElement('span');
-    goldenLabel.textContent = 'Auto-Golden: ';
-    goldenLabel.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    goldenLabel.textContent = 'Auto-Golden:  ';
+    goldenLabel.style.fontFamily = 'Merriweather, Arial, sans-serif';
 
     var fortuneLabel = document.createElement('span');
-    fortuneLabel.textContent = 'Auto-Fortune: ';
-    fortuneLabel.style.fontFamily = 'Tahoma, Arial, sans-serif';
+    fortuneLabel.textContent = 'Auto-Fortune:  ';
+    fortuneLabel.style.fontFamily = 'Merriweather, Arial, sans-serif';
 
     clickPanel.appendChild(clickLabel);
     clickPanel.appendChild(autoClickButton);
