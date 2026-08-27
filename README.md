@@ -17,6 +17,10 @@ The Auto-Purchaser has a customizable menu where you can select the number of bu
 and the type of building to target.From there, you can toggle the auto-purchaser, this mod will calculate how 
 long it will take to purchase the selected number of buildings based on your current cookies, cookies per second, 
 and dropdown selections. 
+
+Right next to this, there is an Auto-Buy Optimal button! Which will calculate the best possible building purchase possible based on its return on investment (ROI) and buy it once there is sufficient cookies, similar to the Auto-Buy function.
+
+NOTE: Both Auto-Buy and Auto-Buy Optimal can be used at the same time.
     
 In addition, there is an auto-clicker menu where you can toggle the auto-clicker for cookies, 
 golden cookies, and fortune cookies.
